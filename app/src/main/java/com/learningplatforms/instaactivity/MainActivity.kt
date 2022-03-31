@@ -1,24 +1,21 @@
 package com.learningplatforms.instaactivity
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Context
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.widget.TextView
-import com.github.instagram4j.instagram4j.IGClient
-import com.github.instagram4j.instagram4j.requests.friendships.FriendshipsActionRequest
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.learningplatforms.instaactivity.modelclass.Insta
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.learningplatforms.instaactivity.workmanager.UploadWorker
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import java.lang.Exception
+import java.io.File
+import java.io.FileWriter
 
-
-private typealias Dyar<T> = Pair<T, Throwable?>
 
 class MainActivity : AppCompatActivity() , CoroutineScope by MainScope() {
 
@@ -28,10 +25,63 @@ class MainActivity : AppCompatActivity() , CoroutineScope by MainScope() {
         setContentView(R.layout.activity_main)
 
         hello = findViewById(R.id.hello)
-        var clint:IGClient? = null
+
+/*
+        Intent(this, RSSPullService::class.java).also { intent ->
+            startService(intent)
+        }
+        val intent = Intent("com.android.ServiceStopped")
+        sendBroadcast(intent)
+*/
+
+        val sharedPreferences = getSharedPreferences("hello", MODE_PRIVATE)
+
+        //  val myWorkRequest = OneTimeWorkRequest.from(MyWork::class.java)
 
 
         try {
+          val num=  sharedPreferences.getInt("number", 1) as Int
+            if (num==200){
+                sharedPreferences.edit().putInt("number", 1).apply()
+            }
+            uploadwork()
+        }catch (e:Exception) {
+            Log.e("catch",e.toString())
+            sharedPreferences.edit().putInt("number", 1).apply()
+            uploadwork()
+        }
+
+
+        generateNoteOnSD(this,"neelesh","hello_duniya")
+
+
+
+
+    }
+
+    fun uploadwork(){
+        val uploadWorkRequest: OneTimeWorkRequest =
+            OneTimeWorkRequestBuilder<UploadWorker>()
+                .addTag("request")
+                .build()
+
+
+        val result = WorkManager.getInstance(this)
+            .enqueueUniqueWork("request", ExistingWorkPolicy.KEEP, uploadWorkRequest)
+        Log.d("result", result.toString())
+    }
+
+
+
+
+
+
+
+
+        //  var clint:IGClient? = null
+
+
+       /* try {
 
             clint = Loginclint().login("_radhi_tiwari_", "sahu196")
         }catch (e:Exception)
@@ -39,7 +89,7 @@ class MainActivity : AppCompatActivity() , CoroutineScope by MainScope() {
             Log.d("msg exp",e.toString())
         }
       //  clint?.isLoggedIn
-        Log.d("msg", clint?.isLoggedIn.toString())
+        Log.d("msg", clint?.isLoggedIn.toString())*/
 
 
         /* val (id, error) = UserHelper(clint).getPk("jaiho__mahakal")
@@ -55,6 +105,7 @@ class MainActivity : AppCompatActivity() , CoroutineScope by MainScope() {
     }
 
 
+/*
     fun sendrequeest(clint: IGClient) {
 
         GlobalScope.launch {
@@ -108,8 +159,34 @@ class MainActivity : AppCompatActivity() , CoroutineScope by MainScope() {
         }
 
     }
+*/
 
+private fun generateNoteOnSD(context: Context,sFileName:String,sBody:String) {
+   /* var file:File?=null
+
+    if (sBody.isEmpty()) {
+        file = File(context.getFilesDir(), "text")
+
+    }
+        if () {
+            file?.mkdir();
+        }
+
+    try {
+        val gpxfile = File(file, "sample")
+        val writer = FileWriter(gpxfile)
+        writer.append(sBody)
+        writer.flush()
+        writer.close()
+        Toast.makeText(context, "Saved your text", Toast.LENGTH_LONG).show()
+    } catch (e: Exception) {
+    }
+*/
 }
+
+
+
+
 
 
 
